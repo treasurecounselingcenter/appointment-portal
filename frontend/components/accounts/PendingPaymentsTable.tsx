@@ -33,6 +33,7 @@ export default function PendingPaymentsTable({
   onUpdated?: () => void;
 }) {
   const [search, setSearch] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const [selectedClient, setSelectedClient] =
     useState<PendingPaymentClient | null>(null);
   const [paymentConfig, setPaymentConfig] = useState<
@@ -61,23 +62,25 @@ export default function PendingPaymentsTable({
       render: (row) => <Tag color="gold">{money(row.pendingPaise)}</Tag>,
     },
     {
-      key: "actions",
-      title: "Action",
-      render: (row) => (
-        <button
-          type="button"
-          className="cursor-pointer inline-flex h-[34px] items-center gap-1.5 whitespace-nowrap rounded-[5px] border border-[#2d5a3f] bg-white px-3 text-xs font-bold text-[#144229] hover:bg-[#e8f7ee]"
-          onClick={async () => {
-            setSelectedClient(row);
-            const { config } = await getClientPaymentConfig(row.id);
-            setPaymentConfig(config || undefined);
-          }}
-        >
-          <FiCreditCard aria-hidden="true" />
-          Payment History
-        </button>
-      ),
-    },
+  key: "actions",
+  title: "Action",
+  render: (row) => (
+    <button
+      type="button"
+      className="cursor-pointer inline-flex h-[34px] items-center gap-1.5 whitespace-nowrap rounded-[5px] border border-[#2d5a3f] bg-white px-3 text-xs font-bold text-[#144229] hover:bg-[#e8f7ee]"
+      onClick={async () => {
+        setPaymentLoading(true);
+        setSelectedClient(row);
+        const { config } = await getClientPaymentConfig(row.id);
+        setPaymentConfig(config || undefined);
+        setPaymentLoading(false);
+      }}
+    >
+      <FiCreditCard aria-hidden="true" />
+      Payment History
+    </button>
+  ),
+},
   ];
 
   return (
@@ -114,6 +117,7 @@ export default function PendingPaymentsTable({
         }
         config={paymentConfig}
         historyOnly
+         loading={paymentLoading}
         onClose={() => {
           setSelectedClient(null);
           setPaymentConfig(undefined);
